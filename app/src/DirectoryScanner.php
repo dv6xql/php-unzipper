@@ -9,9 +9,9 @@ class DirectoryScanner
 
     protected $dirPath;
 
-    public function __construct(string $filePath)
+    public function __construct(string $dirPath)
     {
-        $this->dirPath = dirname($filePath);
+        $this->dirPath = $dirPath;
     }
 
     public function getDirPath(): string

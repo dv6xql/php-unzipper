@@ -3,8 +3,11 @@
 require "src/DirectoryScanner.php";
 use app\src\DirectoryScanner;
 
-echo "PHP Unzipper";
+$dirPath = dirname(__FILE__) . "/public";
 
-$directory = new DirectoryScanner(__FILE__);
+echo "PHP Unzipper";
+echo "{$dirPath}";
+
+$directory = new DirectoryScanner($dirPath);
 $files1 = $directory->scanDir();
 print_r($files1);
