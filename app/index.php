@@ -11,3 +11,6 @@ echo "{$dirPath}";
 $directory = new DirectoryScanner($dirPath);
 $files1 = $directory->scanDir();
 print_r($files1);
+echo "<br/>";
+$files2 = $directory->findFiles();
+print_r($files2);
