@@ -1,8 +1,10 @@
 <?php
 
 require "src/DirectoryScanner.php";
+require "src/FileUnzipper.php";
 
 use app\src\DirectoryScanner;
+use app\src\FileUnzipper;
 
 $dirPath = dirname(__FILE__) . "/public";
 
@@ -10,7 +12,12 @@ $directory = new DirectoryScanner($dirPath);
 $dirFiles = $directory->findFiles();
 
 if (isset($_POST['unzip'])) {
-    //
+    $fileUnzipper = new FileUnzipper();
+
+    $archive = isset($_POST['zipfile']) ? strip_tags($_POST['zipfile']) : '';
+    $filePath = "{$directory->getDirPath()}/{$archive}";
+
+    $fileUnzipper::unzip($filePath, $directory->getDirPath());
 }
 
 ?>
@@ -70,7 +77,7 @@ if (isset($_POST['unzip'])) {
                                 </label>
                                 <div class="relative">
                                     <select class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                                            id="grid-state">
+                                            id="grid-state" name="zipfile">
                                         <?php foreach($dirFiles as $file): ?>
                                             <option><?php echo $file ?></option>
                                         <?php endforeach ?>
