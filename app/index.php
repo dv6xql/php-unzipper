@@ -2,27 +2,29 @@
 
 require "src/DirectoryScanner.php";
 require "src/FileUnzipper.php";
+require "src/Response.php";
 
 use app\src\DirectoryScanner;
 use app\src\FileUnzipper;
+use app\src\Response;
 
 $dirPath = dirname(__FILE__) . "/public";
-
 $directory = new DirectoryScanner($dirPath);
-$dirFiles = $directory->findFiles();
 
-if (isset($_GET['action'])) {
-    echo $_GET['action'];
+if (isset($_POST['intervalRefresh'])) {
+    $response = $directory->findFiles();
+    Response::render($response);
+    return;
 }
 
 if (isset($_POST['btnUnzip'])) {
     $fileUnzipper = new FileUnzipper();
 
-    $fileName = isset($_POST['zipFile']) ? strip_tags($_POST['zipFile']) : '';
+    $fileName = isset($_POST['selectZipFile']) ? strip_tags($_POST['selectZipFile']) : '';
     $filePath = "{$directory->getDirPath()}/{$fileName}";
-    $response = $fileUnzipper::unzip($filePath, $directory->getDirPath());
 
-    echo json_encode($response);
+    $response = $fileUnzipper::unzip($filePath, $directory->getDirPath());
+    Response::render($response);
     return;
 }
 
@@ -38,13 +40,9 @@ if (isset($_POST['btnUnzip'])) {
 <div>
     <main>
 
-        <select id="zipFile">
-            <?php foreach ($dirFiles as $file): ?>
-                <option><?php echo $file ?></option>
-            <?php endforeach ?>
-        </select>
+        <select id="selectZipFile"></select>
 
-        <button type="submit" id="btnUnzip">
+        <button type="button" id="btnUnzip">
             Unzip
         </button>
 
@@ -53,51 +51,102 @@ if (isset($_POST['btnUnzip'])) {
 <script>
     const btnUnzip = document.querySelector('button#btnUnzip');
 
-    function sendData(data) {
-        console.log('Sending data');
+    let request = obj => {
+        return new Promise((resolve, reject) => {
+            let xhr = new XMLHttpRequest();
 
-        const XHR = new XMLHttpRequest();
+            let urlEncodedData = "",
+                urlEncodedDataPairs = [],
+                name;
 
-        let urlEncodedData = "",
-            urlEncodedDataPairs = [],
-            name;
+            // Turn the data object into an array of URL-encoded key/value pairs.
+            for (name in obj.body) {
+                urlEncodedDataPairs.push(encodeURIComponent(name) + '=' + encodeURIComponent(obj.body[name]));
+            }
 
-        // Turn the data object into an array of URL-encoded key/value pairs.
-        for (name in data) {
-            urlEncodedDataPairs.push(encodeURIComponent(name) + '=' + encodeURIComponent(data[name]));
+            // Combine the pairs into a single string and replace all %-encoded spaces to
+            // the '+' character; matches the behaviour of browser form submissions.
+            urlEncodedData = urlEncodedDataPairs.join('&').replace(/%20/g, '+');
+
+            xhr.open(obj.method || "GET", obj.url);
+
+            if (obj.method === 'POST') {
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            }
+
+            if (obj.headers) {
+                Object.keys(obj.headers).forEach(key => {
+                    xhr.setRequestHeader(key, obj.headers[key]);
+                });
+            }
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve(xhr.response);
+                } else {
+                    reject(xhr.statusText);
+                }
+            };
+            xhr.onerror = () => reject(xhr.statusText);
+            console.log(obj);
+            console.log(urlEncodedData);
+            xhr.send(urlEncodedData);
+        });
+    };
+
+    unzip = () => {
+        let data = {
+            method: "POST",
+            url: "",
+            body: {
+                btnUnzip: '1',
+                selectZipFile: document.getElementById('selectZipFile').value
+            }
         }
 
-        // Combine the pairs into a single string and replace all %-encoded spaces to
-        // the '+' character; matches the behaviour of browser form submissions.
-        urlEncodedData = urlEncodedDataPairs.join('&').replace(/%20/g, '+');
-
-        // Define what happens on successful data submission
-        XHR.addEventListener('load', function (event) {
-            let response = JSON.parse(event.target.responseText);
-            alert(response.message);
+        request(data).then(data => {
+            console.log(data)
+        }).catch(error => {
+            console.log(error);
         });
-
-        // Define what happens in case of error
-        XHR.addEventListener('error', function (event) {
-            alert('Oops! Something went wrong.');
-        });
-
-        // Set up our request
-        XHR.open('POST', '');
-
-        // Add the required HTTP header for form data POST requests
-        XHR.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-        // Finally, send our data.
-        XHR.send(urlEncodedData);
     }
 
-    btnUnzip.addEventListener('click', function () {
-        sendData({
-            btnUnzip: '1',
-            zipFile: document.getElementById('zipFile').value
+    refresh = () => {
+        let data = {
+            method: "POST",
+            url: "",
+            body: {
+                intervalRefresh: '1'
+            }
+        }
+
+        let selectZipFile = document.getElementById('selectZipFile')
+
+        request(data).then(data => {
+            data = JSON.parse(data)
+
+            if (data.data && !data.data.length) {
+                selectZipFile.innerHTML = ``;
+                return true
+            }
+
+            const options = data.data.map(car => {
+                const value = car.toLowerCase();
+                return `<option value="${value}">${car}</option>`;
+            });
+
+            selectZipFile.innerHTML = options;
+        }).catch(error => {
+            console.log(error);
         });
+    }
+
+    btnUnzip.addEventListener('click', () => {
+        unzip();
     })
+
+    setInterval(() => {
+        refresh();
+    }, 1000)
 </script>
 </body>
 </html>

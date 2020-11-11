@@ -23,7 +23,10 @@ class DirectoryScanner
     public function scanDir(?string $filterByType = null): array
     {
         $items = scandir($this->dirPath);
-        $output = [];
+        $output = [
+            self::TYPE_DIRS => [],
+            self::TYPE_FILES => []
+        ];
 
         foreach ($items as $item) {
             if (in_array($item, ['.', '..'])) {
@@ -55,6 +58,6 @@ class DirectoryScanner
             $output[] = $item;
         }
 
-        return $output;
+        return Response::success("Success! Files found.", $output);
     }
 }
