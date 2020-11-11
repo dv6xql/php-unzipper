@@ -9,15 +9,9 @@ use app\src\FileUnzipper;
 use app\src\Response;
 
 $dirPath = dirname(__FILE__) . "/public";
-
 $directory = new DirectoryScanner($dirPath);
-$dirFiles = $directory->findFiles();
 
-if (isset($_GET['action'])) {
-    echo $_GET['action'];
-}
-
-if (isset($_POST['btnRefresh'])) {
+if (isset($_POST['intervalRefresh'])) {
     $response = $directory->findFiles();
     Response::render($response);
     return;
@@ -46,25 +40,16 @@ if (isset($_POST['btnUnzip'])) {
 <div>
     <main>
 
-        <select id="zipFile">
-            <?php foreach ($dirFiles as $file): ?>
-                <option><?php echo $file ?></option>
-            <?php endforeach ?>
-        </select>
+        <select id="zipFile"></select>
 
         <button type="submit" id="btnUnzip">
             Unzip
-        </button>
-
-        <button type="button" id="btnRefresh">
-            Refresh
         </button>
 
     </main>
 </div>
 <script>
     const btnUnzip = document.querySelector('button#btnUnzip');
-    const btnRefresh = document.querySelector('button#btnRefresh');
 
     let request = obj => {
         return new Promise((resolve, reject) => {
@@ -130,12 +115,26 @@ if (isset($_POST['btnUnzip'])) {
             method: "POST",
             url: "",
             body: {
-                btnRefresh: '1'
+                intervalRefresh: '1'
             }
         }
 
+        let selectZipFile = document.getElementById('zipFile')
+
         request(data).then(data => {
-            console.log(data)
+            data = JSON.parse(data)
+
+            if (data.data && !data.data.length) {
+                selectZipFile.innerHTML = ``;
+                return true
+            }
+
+            const options = data.data.map(car => {
+                const value = car.toLowerCase();
+                return `<option value="${value}">${car}</option>`;
+            });
+
+            selectZipFile.innerHTML = options;
         }).catch(error => {
             console.log(error);
         });
@@ -145,9 +144,9 @@ if (isset($_POST['btnUnzip'])) {
         unzip();
     })
 
-    btnRefresh.addEventListener('click', () => {
+    setInterval(() => {
         refresh();
-    });
+    }, 1000)
 </script>
 </body>
 </html>
