@@ -2,9 +2,11 @@
 
 require "src/DirectoryScanner.php";
 require "src/FileUnzipper.php";
+require "src/Response.php";
 
 use app\src\DirectoryScanner;
 use app\src\FileUnzipper;
+use app\src\Response;
 
 $dirPath = dirname(__FILE__) . "/public";
 
@@ -13,6 +15,13 @@ $dirFiles = $directory->findFiles();
 
 if (isset($_GET['action'])) {
     echo $_GET['action'];
+}
+
+if (isset($_POST['btnRefresh'])) {
+    $dirFiles = $directory->findFiles();
+
+    echo Response::success("Success", $dirFiles);
+    return;
 }
 
 if (isset($_POST['btnUnzip'])) {
@@ -48,12 +57,17 @@ if (isset($_POST['btnUnzip'])) {
             Unzip
         </button>
 
+        <button type="button" id="btnRefresh">
+            Refresh
+        </button>
+
     </main>
 </div>
 <script>
     const btnUnzip = document.querySelector('button#btnUnzip');
+    const btnRefresh = document.querySelector('button#btnRefresh');
 
-    function sendData(data) {
+    function request(data) {
         console.log('Sending data');
 
         const XHR = new XMLHttpRequest();
@@ -73,6 +87,7 @@ if (isset($_POST['btnUnzip'])) {
 
         // Define what happens on successful data submission
         XHR.addEventListener('load', function (event) {
+            console.log(event.target.responseText)
             let response = JSON.parse(event.target.responseText);
             alert(response.message);
         });
@@ -93,11 +108,17 @@ if (isset($_POST['btnUnzip'])) {
     }
 
     btnUnzip.addEventListener('click', function () {
-        sendData({
+        request({
             btnUnzip: '1',
             zipFile: document.getElementById('zipFile').value
         });
     })
+
+    btnRefresh.addEventListener('click', function () {
+        request({
+            btnRefresh: '1',
+        });
+    });
 </script>
 </body>
 </html>
