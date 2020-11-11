@@ -6,7 +6,7 @@ use ZipArchive;
 
 class FileUnzipper
 {
-    public static function unzip(string $filePath, string $outputDirPath): string
+    public static function unzip(string $filePath, string $outputDirPath): array
     {
         if (!class_exists(ZipArchive::class)) {
             return Response::error('Class ZipArchive not found.');

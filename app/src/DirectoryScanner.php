@@ -58,6 +58,6 @@ class DirectoryScanner
             $output[] = $item;
         }
 
-        return $output;
+        return Response::success("Success! Files found.", $output);
     }
 }

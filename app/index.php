@@ -18,9 +18,8 @@ if (isset($_GET['action'])) {
 }
 
 if (isset($_POST['btnRefresh'])) {
-    $dirFiles = $directory->findFiles();
-
-    echo Response::success("Success", $dirFiles);
+    $response = $directory->findFiles();
+    Response::render($response);
     return;
 }
 
@@ -29,9 +28,9 @@ if (isset($_POST['btnUnzip'])) {
 
     $fileName = isset($_POST['zipFile']) ? strip_tags($_POST['zipFile']) : '';
     $filePath = "{$directory->getDirPath()}/{$fileName}";
-    $response = $fileUnzipper::unzip($filePath, $directory->getDirPath());
 
-    echo $response;
+    $response = $fileUnzipper::unzip($filePath, $directory->getDirPath());
+    Response::render($response);
     return;
 }
 
