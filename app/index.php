@@ -67,57 +67,87 @@ if (isset($_POST['btnUnzip'])) {
     const btnUnzip = document.querySelector('button#btnUnzip');
     const btnRefresh = document.querySelector('button#btnRefresh');
 
-    function request(data) {
-        console.log('Sending data');
+    let request = obj => {
+        return new Promise((resolve, reject) => {
+            let xhr = new XMLHttpRequest();
 
-        const XHR = new XMLHttpRequest();
+            let urlEncodedData = "",
+                urlEncodedDataPairs = [],
+                name;
 
-        let urlEncodedData = "",
-            urlEncodedDataPairs = [],
-            name;
+            // Turn the data object into an array of URL-encoded key/value pairs.
+            for (name in obj.body) {
+                urlEncodedDataPairs.push(encodeURIComponent(name) + '=' + encodeURIComponent(obj.body[name]));
+            }
 
-        // Turn the data object into an array of URL-encoded key/value pairs.
-        for (name in data) {
-            urlEncodedDataPairs.push(encodeURIComponent(name) + '=' + encodeURIComponent(data[name]));
+            // Combine the pairs into a single string and replace all %-encoded spaces to
+            // the '+' character; matches the behaviour of browser form submissions.
+            urlEncodedData = urlEncodedDataPairs.join('&').replace(/%20/g, '+');
+
+            xhr.open(obj.method || "GET", obj.url);
+
+            if (obj.method === 'POST') {
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            }
+
+            if (obj.headers) {
+                Object.keys(obj.headers).forEach(key => {
+                    xhr.setRequestHeader(key, obj.headers[key]);
+                });
+            }
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve(xhr.response);
+                } else {
+                    reject(xhr.statusText);
+                }
+            };
+            xhr.onerror = () => reject(xhr.statusText);
+            console.log(obj);
+            console.log(urlEncodedData);
+            xhr.send(urlEncodedData);
+        });
+    };
+
+    unzip = () => {
+        let data = {
+            method: "POST",
+            url: "",
+            body: {
+                btnUnzip: '1',
+                zipFile: document.getElementById('zipFile').value
+            }
         }
 
-        // Combine the pairs into a single string and replace all %-encoded spaces to
-        // the '+' character; matches the behaviour of browser form submissions.
-        urlEncodedData = urlEncodedDataPairs.join('&').replace(/%20/g, '+');
-
-        // Define what happens on successful data submission
-        XHR.addEventListener('load', function (event) {
-            console.log(event.target.responseText)
-            let response = JSON.parse(event.target.responseText);
-            alert(response.message);
+        request(data).then(data => {
+            console.log(data)
+        }).catch(error => {
+            console.log(error);
         });
-
-        // Define what happens in case of error
-        XHR.addEventListener('error', function (event) {
-            alert('Oops! Something went wrong.');
-        });
-
-        // Set up our request
-        XHR.open('POST', '');
-
-        // Add the required HTTP header for form data POST requests
-        XHR.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-        // Finally, send our data.
-        XHR.send(urlEncodedData);
     }
 
-    btnUnzip.addEventListener('click', function () {
-        request({
-            btnUnzip: '1',
-            zipFile: document.getElementById('zipFile').value
+    refresh = () => {
+        let data = {
+            method: "POST",
+            url: "",
+            body: {
+                btnRefresh: '1'
+            }
+        }
+
+        request(data).then(data => {
+            console.log(data)
+        }).catch(error => {
+            console.log(error);
         });
+    }
+
+    btnUnzip.addEventListener('click', () => {
+        unzip();
     })
 
-    btnRefresh.addEventListener('click', function () {
-        request({
-            btnRefresh: '1',
-        });
+    btnRefresh.addEventListener('click', () => {
+        refresh();
     });
 </script>
 </body>
