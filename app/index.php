@@ -31,7 +31,7 @@ if (isset($_POST['btnUnzip'])) {
     $filePath = "{$directory->getDirPath()}/{$fileName}";
     $response = $fileUnzipper::unzip($filePath, $directory->getDirPath());
 
-    echo json_encode($response);
+    echo $response;
     return;
 }
 
