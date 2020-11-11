@@ -58,13 +58,7 @@ if (isset($_POST['btnUnzip'])) {
             Unzip
         </button>
 
-        <ul class="list-group" id="listUnzipped">
-            <li class="list-group-item">Cras justo odio</li>
-            <li class="list-group-item">Dapibus ac facilisis in</li>
-            <li class="list-group-item">Morbi leo risus</li>
-            <li class="list-group-item">Porta ac consectetur ac</li>
-            <li class="list-group-item">Vestibulum at eros</li>
-        </ul>
+        <ul class="list-group" id="listUnzipped"></ul>
 
     </main>
 </div>
@@ -135,13 +129,13 @@ if (isset($_POST['btnUnzip'])) {
             dirs = dirs.map(item => {
                 return `<li class="list-group-item">${item}</li>`
             });
-            listUnzipped.innerHTML = dirs;
+            listUnzipped.innerHTML = dirs.join("");
 
             let files = data.data.files;
             files = files.map(item => {
                 return `<li class="list-group-item">${item}</li>`
             });
-            listUnzipped.innerHTML = files;
+            listUnzipped.innerHTML = files.join("");
         }).catch(error => {
             console.log(error);
         });
@@ -189,7 +183,7 @@ if (isset($_POST['btnUnzip'])) {
                 return `<option value="${value}">${car}</option>`;
             });
 
-            selectZipFile.innerHTML = options;
+            selectZipFile.innerHTML = options.join("");
         }).catch(error => {
             console.log(error);
         });
