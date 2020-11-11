@@ -8,16 +8,28 @@ use app\src\DirectoryScanner;
 use app\src\FileUnzipper;
 use app\src\Response;
 
-$dirPath = dirname(__FILE__) . "/public";
-$directory = new DirectoryScanner($dirPath);
+if (isset($_POST['actionScanDir'])) {
+    $fileName = strip_tags($_POST['actionScanDir']);
+    $dirPath = dirname(__FILE__) . "/public/" . pathinfo($fileName, PATHINFO_FILENAME);
+    $directory = new DirectoryScanner($dirPath);
+
+    $response = $directory->scanDir($dirPath);
+    Response::render($response);
+    return;
+}
 
 if (isset($_POST['intervalRefresh'])) {
+    $dirPath = dirname(__FILE__) . "/public";
+    $directory = new DirectoryScanner($dirPath);
+
     $response = $directory->findFiles();
     Response::render($response);
     return;
 }
 
 if (isset($_POST['btnUnzip'])) {
+    $dirPath = dirname(__FILE__) . "/public";
+    $directory = new DirectoryScanner($dirPath);
     $fileUnzipper = new FileUnzipper();
 
     $fileName = isset($_POST['selectZipFile']) ? strip_tags($_POST['selectZipFile']) : '';
@@ -46,10 +58,19 @@ if (isset($_POST['btnUnzip'])) {
             Unzip
         </button>
 
+        <ul class="list-group" id="listUnzipped">
+            <li class="list-group-item">Cras justo odio</li>
+            <li class="list-group-item">Dapibus ac facilisis in</li>
+            <li class="list-group-item">Morbi leo risus</li>
+            <li class="list-group-item">Porta ac consectetur ac</li>
+            <li class="list-group-item">Vestibulum at eros</li>
+        </ul>
+
     </main>
 </div>
 <script>
     const btnUnzip = document.querySelector('button#btnUnzip');
+    const listUnzipped = document.querySelector('ul#listUnzipped');
 
     let request = obj => {
         return new Promise((resolve, reject) => {
@@ -93,6 +114,39 @@ if (isset($_POST['btnUnzip'])) {
         });
     };
 
+    scanDir = () => {
+        let data = {
+            method: "POST",
+            url: "",
+            body: {
+                actionScanDir: document.getElementById('selectZipFile').value
+            }
+        }
+
+        request(data).then(data => {
+            data = JSON.parse(data)
+
+            if (data.data && !Object.keys(data.data).length) {
+                listUnzipped.innerHTML = ``;
+                return true
+            }
+
+            let dirs = data.data.dirs;
+            dirs = dirs.map(item => {
+                return `<li class="list-group-item">${item}</li>`
+            });
+            listUnzipped.innerHTML = dirs;
+
+            let files = data.data.files;
+            files = files.map(item => {
+                return `<li class="list-group-item">${item}</li>`
+            });
+            listUnzipped.innerHTML = files;
+        }).catch(error => {
+            console.log(error);
+        });
+    }
+
     unzip = () => {
         let data = {
             method: "POST",
@@ -105,6 +159,7 @@ if (isset($_POST['btnUnzip'])) {
 
         request(data).then(data => {
             console.log(data)
+            scanDir()
         }).catch(error => {
             console.log(error);
         });

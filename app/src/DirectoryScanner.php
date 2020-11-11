@@ -43,7 +43,7 @@ class DirectoryScanner
             return $output[$filterByType];
         }
 
-        return $output;
+        return Response::success("Success! Directory scanned.", $output);
     }
 
     public function findFiles(array $extensions = self::DEFAULT_FILE_EXTENSIONS): array
