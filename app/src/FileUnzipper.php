@@ -25,6 +25,8 @@ class FileUnzipper
         $zip->extractTo($outputDirPath);
         $zip->close();
 
+        unlink($filePath);
+
         return Response::success('Success! Unzipped.');
     }
 }
