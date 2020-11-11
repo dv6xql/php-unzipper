@@ -20,7 +20,7 @@ if (isset($_POST['intervalRefresh'])) {
 if (isset($_POST['btnUnzip'])) {
     $fileUnzipper = new FileUnzipper();
 
-    $fileName = isset($_POST['zipFile']) ? strip_tags($_POST['zipFile']) : '';
+    $fileName = isset($_POST['selectZipFile']) ? strip_tags($_POST['selectZipFile']) : '';
     $filePath = "{$directory->getDirPath()}/{$fileName}";
 
     $response = $fileUnzipper::unzip($filePath, $directory->getDirPath());
@@ -40,9 +40,9 @@ if (isset($_POST['btnUnzip'])) {
 <div>
     <main>
 
-        <select id="zipFile"></select>
+        <select id="selectZipFile"></select>
 
-        <button type="submit" id="btnUnzip">
+        <button type="button" id="btnUnzip">
             Unzip
         </button>
 
@@ -99,7 +99,7 @@ if (isset($_POST['btnUnzip'])) {
             url: "",
             body: {
                 btnUnzip: '1',
-                zipFile: document.getElementById('zipFile').value
+                selectZipFile: document.getElementById('selectZipFile').value
             }
         }
 
@@ -119,7 +119,7 @@ if (isset($_POST['btnUnzip'])) {
             }
         }
 
-        let selectZipFile = document.getElementById('zipFile')
+        let selectZipFile = document.getElementById('selectZipFile')
 
         request(data).then(data => {
             data = JSON.parse(data)
