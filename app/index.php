@@ -20,11 +20,20 @@ if (isset($_POST['actionScanDir'])) {
     return;
 }
 
-if (isset($_POST['actionRemove'])) {
-    $path = strip_tags($_POST['actionRemove']);
+if (isset($_POST['actionRemoveDir'])) {
+    $dirPath = strip_tags($_POST['actionRemoveDir']);
     $directoryManager = new DirectoryManager();
 
-    $response = $directoryManager::removeFile($path);
+    $response = $directoryManager::removeDirectory($dirPath);
+    Response::render($response);
+    return;
+}
+
+if (isset($_POST['actionRemoveFile'])) {
+    $filePath = strip_tags($_POST['actionRemoveFile']);
+    $directoryManager = new DirectoryManager();
+
+    $response = $directoryManager::removeFile($filePath);
     Response::render($response);
     return;
 }
@@ -141,13 +150,13 @@ if (isset($_POST['btnUnzip'])) {
 
             let dirs = data.data.dirs;
             dirs = dirs.map(item => {
-                return `<li class="list-group-item">[DIR] ${item} | <a href="#" onclick="remove('${item}')">Remove</a></li></li>`
+                return `<li class="list-group-item">[DIR] ${item} | <a href="#" onclick="removeDir('${item}')">Remove</a></li></li>`
             });
             innerHTML += dirs.join("");
 
             let files = data.data.files;
             files = files.map(item => {
-                return `<li class="list-group-item">${item} | <a href="#" onclick="remove('${item}')">Remove</a></li>`
+                return `<li class="list-group-item">${item} | <a href="#" onclick="removeFile('${item}')">Remove</a></li>`
             });
             innerHTML += files.join("");
 
@@ -157,12 +166,29 @@ if (isset($_POST['btnUnzip'])) {
         });
     }
 
-    remove = (path) => {
+    removeDir = (path) => {
         let data = {
             method: "POST",
             url: "",
             body: {
-                actionRemove: path
+                actionRemoveDir: path
+            }
+        }
+
+        request(data).then(data => {
+            console.log(data)
+            scanDir()
+        }).catch(error => {
+            console.log(error);
+        });
+    }
+
+    removeFile = (path) => {
+        let data = {
+            method: "POST",
+            url: "",
+            body: {
+                actionRemoveFile: path
             }
         }
 
