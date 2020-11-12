@@ -125,20 +125,28 @@ if (isset($_POST['btnUnzip'])) {
                 return true
             }
 
+            let innerHTML = "";
+
             let dirs = data.data.dirs;
             dirs = dirs.map(item => {
-                return `<li class="list-group-item">${item}</li>`
+                return `<li class="list-group-item">[DIR] ${item} | <a href="#" onclick="remove()">Remove</a></li></li>`
             });
-            listUnzipped.innerHTML = dirs.join("");
+            innerHTML += dirs.join("");
 
             let files = data.data.files;
             files = files.map(item => {
-                return `<li class="list-group-item">${item}</li>`
+                return `<li class="list-group-item">${item} | <a href="#" onclick="remove()">Remove</a></li>`
             });
-            listUnzipped.innerHTML = files.join("");
+            innerHTML += files.join("");
+
+            listUnzipped.innerHTML = innerHTML;
         }).catch(error => {
             console.log(error);
         });
+    }
+
+    remove = () => {
+        console.log('remove')
     }
 
     unzip = () => {
