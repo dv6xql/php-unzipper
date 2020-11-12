@@ -33,9 +33,10 @@ class DirectoryScanner
                 continue;
             }
 
-            $type = is_dir("{$this->dirPath}/{$item}") ? self::TYPE_DIRS : self::TYPE_FILES;
+            $path = "{$this->dirPath}/{$item}";
+            $type = is_dir($path) ? self::TYPE_DIRS : self::TYPE_FILES;
 
-            $output[$type][] = $item;
+            $output[$type][] = $path;
             ksort($output[$type]);
         }
 
@@ -43,7 +44,7 @@ class DirectoryScanner
             return $output[$filterByType];
         }
 
-        return $output;
+        return Response::success("Success! Directory scanned.", $output);
     }
 
     public function findFiles(array $extensions = self::DEFAULT_FILE_EXTENSIONS): array
