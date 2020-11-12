@@ -1,10 +1,12 @@
 <?php
 
 require "src/DirectoryScanner.php";
+require "src/DirectoryManager.php";
 require "src/FileUnzipper.php";
 require "src/Response.php";
 
 use app\src\DirectoryScanner;
+use app\src\DirectoryManager;
 use app\src\FileUnzipper;
 use app\src\Response;
 
@@ -14,6 +16,15 @@ if (isset($_POST['actionScanDir'])) {
     $directory = new DirectoryScanner($dirPath);
 
     $response = $directory->scanDir($dirPath);
+    Response::render($response);
+    return;
+}
+
+if (isset($_POST['actionRemove'])) {
+    $path = strip_tags($_POST['actionRemove']);
+    $directoryManager = new DirectoryManager();
+
+    $response = $directoryManager::removeFile($path);
     Response::render($response);
     return;
 }
@@ -32,8 +43,9 @@ if (isset($_POST['btnUnzip'])) {
     $directory = new DirectoryScanner($dirPath);
     $fileUnzipper = new FileUnzipper();
 
-    $fileName = isset($_POST['selectZipFile']) ? strip_tags($_POST['selectZipFile']) : '';
-    $filePath = "{$directory->getDirPath()}/{$fileName}";
+    $filePath = isset($_POST['selectZipFile']) ? strip_tags($_POST['selectZipFile']) : '';
+//    $fileName = pathinfo($fileName, PATHINFO_FILENAME);
+//    $filePath = "{$directory->getDirPath()}/{$fileName}";
 
     $response = $fileUnzipper::unzip($filePath, $directory->getDirPath());
     Response::render($response);
@@ -129,13 +141,13 @@ if (isset($_POST['btnUnzip'])) {
 
             let dirs = data.data.dirs;
             dirs = dirs.map(item => {
-                return `<li class="list-group-item">[DIR] ${item} | <a href="#" onclick="remove()">Remove</a></li></li>`
+                return `<li class="list-group-item">[DIR] ${item} | <a href="#" onclick="remove('${item}')">Remove</a></li></li>`
             });
             innerHTML += dirs.join("");
 
             let files = data.data.files;
             files = files.map(item => {
-                return `<li class="list-group-item">${item} | <a href="#" onclick="remove()">Remove</a></li>`
+                return `<li class="list-group-item">${item} | <a href="#" onclick="remove('${item}')">Remove</a></li>`
             });
             innerHTML += files.join("");
 
@@ -145,8 +157,21 @@ if (isset($_POST['btnUnzip'])) {
         });
     }
 
-    remove = () => {
-        console.log('remove')
+    remove = (path) => {
+        let data = {
+            method: "POST",
+            url: "",
+            body: {
+                actionRemove: path
+            }
+        }
+
+        request(data).then(data => {
+            console.log(data)
+            scanDir()
+        }).catch(error => {
+            console.log(error);
+        });
     }
 
     unzip = () => {
