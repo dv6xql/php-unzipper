@@ -201,17 +201,25 @@ if (isset($_POST['btnUnzip'])) {
     }
 
     unzip = () => {
+        let filePath = document.getElementById('selectZipFile').value;
         let data = {
             method: "POST",
             url: "",
             body: {
                 btnUnzip: '1',
-                selectZipFile: document.getElementById('selectZipFile').value
+                selectZipFile: filePath
             }
         }
 
         request(data).then(data => {
-            console.log(data)
+            data = JSON.parse(data)
+
+            let removeZipFile = confirm(`${data.message} Do you want to remove ${filePath}?`)
+
+            if (removeZipFile) {
+                removeFile(filePath)
+            }
+
             scanDir()
         }).catch(error => {
             console.log(error);
